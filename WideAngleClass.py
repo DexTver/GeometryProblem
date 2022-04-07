@@ -4,20 +4,23 @@ class WideAngle:
     def __init__(self, x1, y1, x2, y2, x3, y3):
         # (x1, y1) и (x2, y2) задают отрезок; (x3, y3) задают сторону, в которую направлены прямые
         self.mainSegment = (x1, y1, x2, y2)
+        self.vertical, self.horizontal, self.pos = False, False, False
         if x1 == x2:
             if x3 - x1 >= 0:
                 x4 = x1 + 10000
             else:
                 x4 = x1 - 10000
             y4 = y1
+            self.vertical = True
         elif y1 == y2:
             if y3 - y1 >= 0:
                 y4 = y1 + 10000
             else:
                 y4 = y1 - 10000
             x4 = x1
+            self.horizontal = True
         else:
-            pos = ((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) > 0
+            self.pos = pos = check_pos(x1, y1, x2, y2, x3, y3)
             # переменная pos показывает по какую сторону от отрезка отложены лучи
             k, b = create_equation(x1, y1, x2, y2)
             # y = kx + b
@@ -48,6 +51,10 @@ class WideAngle:
         self.firstSegment = (x1, y1, x4, y4)
         x5, y5 = x4 + x2 - x1, y4 + y2 - y1
         self.secondSegment = (x2, y2, x5, y5)
+
+
+def check_pos(x1, y1, x2, y2, x3, y3):
+    return ((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) > 0
 
 
 def create_equation(x1, y1, x2, y2):
