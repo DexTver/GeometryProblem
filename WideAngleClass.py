@@ -48,9 +48,9 @@ class WideAngle:
                 else:
                     x4 = x1 - 10000
                     y4 = -x4 / k + b1
-        self.firstSegment = (x1, y1, x4, y4)
+        self.firstSegment = (x1, y1, round(x4), round(y4))
         x5, y5 = x4 + x2 - x1, y4 + y2 - y1
-        self.secondSegment = (x2, y2, x5, y5)
+        self.secondSegment = (x2, y2, round(x5), round(y5))
 
 
 def check_pos(x1, y1, x2, y2, x3, y3):
@@ -59,6 +59,10 @@ def check_pos(x1, y1, x2, y2, x3, y3):
 
 def create_equation(x1, y1, x2, y2):
     # y = kx + b
+    if x1 == x2:
+        return None, None
+    elif y1 == y2:
+        return None, None
     k = (y2 - y1) / (x2 - x1)
     b = y1 - x1 * (y2 - y1) / (x2 - x1)
     return k, b
