@@ -34,7 +34,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         secondCoords = self.SecondCoordCircle.toPlainText()
         if firstCoords == "" or secondCoords == "":
             # считывание с мышки
-            pass
+            return None
         else:
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
@@ -50,7 +50,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         thirdCoords = self.ThirdCoordAngle.toPlainText()
         if firstCoords == "" or secondCoords == "" or thirdCoords == "":
             # считывание с мышки
-            pass
+            return None
         else:
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
@@ -100,6 +100,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.drawShapes(painter)  # рисует все фигуры
         self.drawFrame(painter)  # рисует рамку координатной плоскости
         self.drawBoards(painter)  # закрашивает поле вне координатной плоскости
+        painter.end()
 
     def drawShapes(self, painter):
         self.drawGrid(painter)  # рисует сетку координат
