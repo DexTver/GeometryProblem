@@ -1,12 +1,14 @@
 import sys
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon
 from PyQt5.QtCore import Qt, QPoint
 from window import Ui_GeometryProblem
 
-from PlaneClass import Plane
+from PlaneClass import Plane, extractNumbers
+from WideAngleClass import WideAngle
+from CircleClass import Circle
 
 
 class GeometryWidget(QMainWindow, Ui_GeometryProblem):
@@ -15,7 +17,82 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         # uic.loadUi("window.ui", self)
         self.setupUi(self)
         self.max_x, self.max_y, self.min_x, self.min_y = 799, 449, 199, 1
-        self.plane = Plane(500, 225, 2)
+        self.plane = Plane(500, 225)
+        self.LeftBut.clicked.connect(lambda: self.rotatePlane("left"))
+        self.RightBut.clicked.connect(lambda: self.rotatePlane("right"))
+        self.DownBut.clicked.connect(lambda: self.rotatePlane("down"))
+        self.UpBut.clicked.connect(lambda: self.rotatePlane("up"))
+        self.ScaleSlider.valueChanged[int].connect(self.scalePlane)
+        self.DrawBut.clicked.connect(self.update)
+        self.LoadFileBut.clicked.connect(self.loadFromFile)
+        self.ClearBut.clicked.connect(self.clearPlane)
+        self.AddAngleBut.clicked.connect(self.addAdngle)
+        self.AddCircleBut.clicked.connect(self.addCicle)
+
+    def addCicle(self):
+        firstCoords = self.CenterCoordCircle.toPlainText()
+        secondCoords = self.SecondCoordCircle.toPlainText()
+        if firstCoords == "" or secondCoords == "":
+            # считывание с мышки
+            pass
+        else:
+            firstCoords = extractNumbers(firstCoords)
+            secondCoords = extractNumbers(secondCoords)
+        circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
+        self.plane.add(circle)
+        self.CenterCoordCircle.setPlainText("")
+        self.SecondCoordCircle.setPlainText("")
+        self.update()
+
+    def addAdngle(self):
+        firstCoords = self.FirstCoordAngle.toPlainText()
+        secondCoords = self.SecondCoordAngle.toPlainText()
+        thirdCoords = self.ThirdCoordAngle.toPlainText()
+        if firstCoords == "" or secondCoords == "" or thirdCoords == "":
+            # считывание с мышки
+            pass
+        else:
+            firstCoords = extractNumbers(firstCoords)
+            secondCoords = extractNumbers(secondCoords)
+            thirdCoords = extractNumbers(thirdCoords)
+        angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
+                          thirdCoords[0], thirdCoords[1])
+        self.plane.add(angle)
+        self.FirstCoordAngle.setPlainText("")
+        self.SecondCoordAngle.setPlainText("")
+        self.ThirdCoordAngle.setPlainText("")
+        self.update()
+
+    def clearPlane(self):
+        self.plane.clear()
+        self.update()
+
+    def loadFromFile(self):
+        fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
+                                            "Текстовый файл (*.txt)")[0]
+        print(fname)
+        self.plane.addFromFile(fname)
+        self.update()
+
+    def scalePlane(self, value):
+        self.plane.scale = max(value // 5, 1)
+        self.update()
+
+    def rotatePlane(self, command):
+        const = 20
+        if command == "left":
+            self.plane.center = (
+                self.plane.center[0] + const * self.plane.scale, self.plane.center[1])
+        elif command == "right":
+            self.plane.center = (
+                self.plane.center[0] - const * self.plane.scale, self.plane.center[1])
+        elif command == "up":
+            self.plane.center = (
+                self.plane.center[0], self.plane.center[1] + const * self.plane.scale)
+        elif command == "down":
+            self.plane.center = (
+                self.plane.center[0], self.plane.center[1] - const * self.plane.scale)
+        self.update()
 
     def paintEvent(self, event):
         painter = QPainter()
@@ -40,10 +117,10 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         painter.drawLine(self.min_x, c_y, self.max_x, c_y)
         painter.drawLine(c_x, self.min_y, c_x, self.max_y)
         # рисует стрелочки
-        xArrow = [QPoint(self.max_x - 10 * s, c_y - 5 * s), QPoint(self.max_x - 1, c_y),
-                  QPoint(self.max_x - 10 * s, c_y + 5 * s)]
-        yArrow = [QPoint(c_x - 5 * s, self.min_y + 10 * s), QPoint(c_x, self.min_y + 1),
-                  QPoint(c_x + 5 * s, self.min_y + 10 * s)]
+        xArrow = [QPoint(self.max_x - 10, c_y - 5), QPoint(self.max_x - 1, c_y),
+                  QPoint(self.max_x - 10, c_y + 5)]
+        yArrow = [QPoint(c_x - 5, self.min_y + 10), QPoint(c_x, self.min_y + 1),
+                  QPoint(c_x + 5, self.min_y + 10)]
         painter.drawPolygon(QPolygon(xArrow))
         painter.drawPolygon(QPolygon(yArrow))
 
