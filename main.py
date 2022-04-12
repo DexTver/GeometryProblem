@@ -20,7 +20,9 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
-        self.drawShapes(painter)
+        self.drawShapes(painter)  # рисует все фигуры
+        self.drawFrame(painter)  # рисует рамку координатной плоскости
+        self.drawBoards(painter)  # закрашивает поле вне координатной плоскости
 
     def drawShapes(self, painter):
         self.drawGrid(painter)  # рисует сетку координат
@@ -29,8 +31,6 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             self.drawCircle(painter, a)  # рисует все окружности
         for a in self.plane.angles:
             self.drawAngle(painter, a)  # рисует все "широкие" углы
-        self.drawFrame(painter)  # рисует рамку координатной плоскости
-        self.drawBoards(painter)  # закрашивает поле вне координатной плоскости
 
     def drawGrid(self, painter):
         # рисует сетку координат
