@@ -29,19 +29,45 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.AddAngleBut.clicked.connect(self.addAdngle)
         self.AddCircleBut.clicked.connect(self.addCicle)
 
+    def mousePressEvent(self, event):
+        s = self.plane.scale
+        coord = (event.x(), event.y())
+        if self.min_y < coord[0] < self.max_x and self.min_y < coord[1] < self.max_y:
+            coord = ((event.x() - self.plane.center[0] + s - 1) // s,
+                     (-event.y() + self.plane.center[1]) // s)
+            self.plane.add(coord)
+            self.update()
+
+    def keyPressEvent(self, event):
+        if int(event.modifiers()) == Qt.ControlModifier:
+            if event.key() == Qt.Key_Left:
+                self.rotatePlane("left")
+            if event.key() == Qt.Key_Right:
+                self.rotatePlane("right")
+            if event.key() == Qt.Key_Down:
+                self.rotatePlane("down")
+            if event.key() == Qt.Key_Up:
+                self.rotatePlane("up")
+
     def addCicle(self):
         firstCoords = self.CenterCoordCircle.toPlainText()
         secondCoords = self.SecondCoordCircle.toPlainText()
         if firstCoords == "" or secondCoords == "":
             # считывание с мышки
-            return None
+            try:
+                firstCoords = self.plane.dots.popleft()
+                secondCoords = self.plane.dots.popleft()
+                circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
+                self.plane.add(circle)
+            except:
+                self.WarningLabel.setText("Недостаточно\nточек!")
         else:
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
-        circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
-        self.plane.add(circle)
-        self.CenterCoordCircle.setPlainText("")
-        self.SecondCoordCircle.setPlainText("")
+            circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
+            self.plane.add(circle)
+            self.CenterCoordCircle.setPlainText("")
+            self.SecondCoordCircle.setPlainText("")
         self.update()
 
     def addAdngle(self):
@@ -50,17 +76,25 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         thirdCoords = self.ThirdCoordAngle.toPlainText()
         if firstCoords == "" or secondCoords == "" or thirdCoords == "":
             # считывание с мышки
-            return None
+            try:
+                firstCoords = self.plane.dots.popleft()
+                secondCoords = self.plane.dots.popleft()
+                thirdCoords = self.plane.dots.popleft()
+                angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
+                                  thirdCoords[0], thirdCoords[1])
+                self.plane.add(angle)
+            except:
+                self.WarningLabel.setText("Недостаточно\nточек!")
         else:
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
             thirdCoords = extractNumbers(thirdCoords)
-        angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
-                          thirdCoords[0], thirdCoords[1])
-        self.plane.add(angle)
-        self.FirstCoordAngle.setPlainText("")
-        self.SecondCoordAngle.setPlainText("")
-        self.ThirdCoordAngle.setPlainText("")
+            angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
+                              thirdCoords[0], thirdCoords[1])
+            self.plane.add(angle)
+            self.FirstCoordAngle.setPlainText("")
+            self.SecondCoordAngle.setPlainText("")
+            self.ThirdCoordAngle.setPlainText("")
         self.update()
 
     def clearPlane(self):
@@ -68,10 +102,13 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.update()
 
     def loadFromFile(self):
-        fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
-                                            "Текстовый файл (*.txt)")[0]
-        print(fname)
-        self.plane.addFromFile(fname)
+        try:
+            fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
+                                                "Текстовый файл (*.txt)")[0]
+            print(fname)
+            self.plane.addFromFile(fname)
+        except:
+            self.WarningLabel.setText("Выбран\nнекорректный\nфайл!")
         self.update()
 
     def scalePlane(self, value):
@@ -109,6 +146,8 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             self.drawCircle(painter, a)  # рисует все окружности
         for a in self.plane.angles:
             self.drawAngle(painter, a)  # рисует все "широкие" углы
+        painter.setPen(QPen(Qt.gray, 5))
+        self.drawDots(painter)
 
     def drawGrid(self, painter):
         # рисует сетку координат
@@ -144,6 +183,13 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         s = self.plane.scale
         x, y = round(c_x + (a.center[0] - a.radius) * s), round(c_y - (a.center[1] + a.radius) * s)
         painter.drawEllipse(x, y, round(a.radius * s) * 2, round(a.radius * s) * 2)
+
+    def drawDots(self, painter):
+        # рисует точки
+        c_x, c_y = self.plane.center
+        s = self.plane.scale
+        for coord in self.plane.dots:
+            painter.drawEllipse(c_x + coord[0] * s, c_y - coord[1] * s, 1, 1)
 
     def drawFrame(self, painter):
         # рисует рамку

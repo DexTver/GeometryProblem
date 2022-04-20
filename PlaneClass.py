@@ -1,10 +1,13 @@
 from CircleClass import Circle
 from WideAngleClass import WideAngle
 
+from collections import deque
+
 
 class Plane:
     def __init__(self, center_x, center_y, scale=1):
         self.scale = round(scale)
+        self.dots = deque()
         self.circles = list()
         self.angles = list()
         self.center = (center_x, center_y)
@@ -16,12 +19,13 @@ class Plane:
         self.angles.clear()
 
     def add(self, obj):
-        if obj.type == "Circle":
-            self.circles.append(obj)
-        elif obj.type == "Angle":
-            self.angles.append(obj)
-        else:
-            pass
+        try:
+            if obj.type == "Circle":
+                self.circles.append(obj)
+            elif obj.type == "Angle":
+                self.angles.append(obj)
+        except:
+            self.dots.append(obj)
 
     def addFromFile(self, fname):
         txt = open(fname, mode="r")
@@ -33,6 +37,7 @@ class Plane:
             else:
                 self.angles.append(
                     WideAngle(points[0], points[1], points[2], points[3], points[4], points[5]))
+        txt.close()
 
 
 def extractNumbers(str):
