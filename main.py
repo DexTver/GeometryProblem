@@ -124,19 +124,15 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.update()
 
     def rotatePlane(self, command):
-        const = 20
+        const = 10 * self.plane.scale
         if command == "left":
-            self.plane.center = (
-                self.plane.center[0] + const * self.plane.scale, self.plane.center[1])
+            self.plane.center = (self.plane.center[0] + const, self.plane.center[1])
         elif command == "right":
-            self.plane.center = (
-                self.plane.center[0] - const * self.plane.scale, self.plane.center[1])
+            self.plane.center = (self.plane.center[0] - const, self.plane.center[1])
         elif command == "up":
-            self.plane.center = (
-                self.plane.center[0], self.plane.center[1] + const * self.plane.scale)
+            self.plane.center = (self.plane.center[0], self.plane.center[1] + const)
         elif command == "down":
-            self.plane.center = (
-                self.plane.center[0], self.plane.center[1] - const * self.plane.scale)
+            self.plane.center = (self.plane.center[0], self.plane.center[1] - const)
         self.update()
 
     def paintEvent(self, event):
@@ -230,13 +226,76 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             2] * s, angle.mainSegment[3] * s
         x4, y4, x5, y5 = angle.firstSegment[2] * s, angle.firstSegment[3] * s, angle.secondSegment[
             2] * s, angle.secondSegment[3] * s
+        points = list()
         if angle.vertical:
-            pass
+            k1, b1 = create_equation(x1, y1, x4, y4)
+            k2, b2 = create_equation(x2, y2, x5, y5)
+            for x in range(x0 - r, x0 + r - 1):
+                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
+                for y in [y0 + dy, y0 - dy]:
+                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
+                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
+                        points.append(QPoint(x + c_x, -y + c_y))
+                y, yo = y0 + dy, y0 - dy
+                if x == x1:
+                    if yo <= y1 <= y:
+                        points.append(QPoint(x + c_x, -y1 + c_y))
+                    if yo <= y2 <= y:
+                        points.append(QPoint(x + c_x, -y2 + c_y))
+                    if y1 > y2:
+                        y1, y2 = y2, y1
+                    if y1 <= yo <= y2:
+                        points.append(QPoint(x + c_x, -yo + c_y))
+                    if y1 <= y <= y2:
+                        points.append(QPoint(x + c_x, -y + c_y))
+                if min(x1, x4) <= x <= max(x1, x4):
+                    Y = round(k1 * x + b1)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+                if min(x2, x5) <= x <= max(x2, x5):
+                    Y = round(k2 * x + b2)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+            painter.drawPolygon(QPolygon(points))
+        elif angle.horizontal:
+            m_k, m_b = create_equation(x1, y1, x2, y2)
+            for x in range(x0 - r, x0 + r - 1):
+                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
+                for y in [y0 + dy, y0 - dy]:
+                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
+                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
+                        points.append(QPoint(x + c_x, -y + c_y))
+                y, yo = y0 + dy, y0 - dy
+                if min(x1, x2) <= x <= max(x1, x2):
+                    Y = round(m_k * x + m_b)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+                if x == x1:
+                    if yo <= y1 <= y:
+                        points.append(QPoint(x + c_x, -y1 + c_y))
+                    if yo <= y4 <= y:
+                        points.append(QPoint(x + c_x, -y4 + c_y))
+                    if y1 > y4:
+                        y1, y4 = y4, y1
+                    if y1 <= yo <= y4:
+                        points.append(QPoint(x + c_x, -yo + c_y))
+                    if y1 <= y <= y4:
+                        points.append(QPoint(x + c_x, -y + c_y))
+                if x == x2:
+                    if yo <= y2 <= y:
+                        points.append(QPoint(x + c_x, -y2 + c_y))
+                    if yo <= y5 <= y:
+                        points.append(QPoint(x + c_x, -y5 + c_y))
+                    if y2 > y5:
+                        y2, y5 = y5, y2
+                    if y2 <= yo <= y5:
+                        points.append(QPoint(x + c_x, -yo + c_y))
+                    if y2 <= y <= y5:
+                        points.append(QPoint(x + c_x, -y + c_y))
         else:
             m_k, m_b = create_equation(x1, y1, x2, y2)
             k1, b1 = create_equation(x1, y1, x4, y4)
             k2, b2 = create_equation(x2, y2, x5, y5)
-            points = list()
             for x in range(x0 - r, x0 + r - 1):
                 dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
                 for y in [y0 + dy, y0 - dy]:
@@ -256,7 +315,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
                     Y = round(k2 * x + b2)
                     if yo <= Y <= y:
                         points.append(QPoint(x + c_x, -Y + c_y))
-            painter.drawPolygon(QPolygon(points))
+        painter.drawPolygon(QPolygon(points))
 
 
 if __name__ == '__main__':

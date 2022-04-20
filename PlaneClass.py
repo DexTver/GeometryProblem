@@ -44,8 +44,8 @@ class Plane:
         txt.close()
 
     def calculateCross(self):
-        self.my_angle = WideAngle(1, 1, 20, 20, 10, 10)
-        self.my_circle = Circle(-20, -20, 20, 20)
+        self.my_angle = WideAngle(20, 20, 20, -15, 50, 50)
+        self.my_circle = Circle(-10, -10, 30, 30)
         return 100
 
 
