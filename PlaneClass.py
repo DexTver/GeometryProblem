@@ -10,6 +10,8 @@ class Plane:
         self.dots = deque()
         self.circles = list()
         self.angles = list()
+        self.my_circle = None
+        self.my_angle = None
         self.center = (center_x, center_y)
         # self.circles.append(Circle(70, 40, 100, -40))
         # self.angles.append(WideAngle(1, 1, 20, 20, 10, 10))
@@ -17,6 +19,8 @@ class Plane:
     def clear(self):
         self.circles.clear()
         self.angles.clear()
+        self.my_circle = None
+        self.my_angle = None
 
     def add(self, obj):
         try:
@@ -38,6 +42,11 @@ class Plane:
                 self.angles.append(
                     WideAngle(points[0], points[1], points[2], points[3], points[4], points[5]))
         txt.close()
+
+    def calculateCross(self):
+        self.my_angle = WideAngle(1, 1, 20, 20, 10, 10)
+        self.my_circle = Circle(-20, -20, 20, 20)
+        return 100
 
 
 def extractNumbers(str):

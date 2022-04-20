@@ -1,13 +1,14 @@
 import sys
+from math import sqrt
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
-from PyQt5.QtGui import QPainter, QPen, QPolygon
+from PyQt5.QtGui import QPainter, QPen, QPolygon, QColor
 from PyQt5.QtCore import Qt, QPoint
 from window import Ui_GeometryProblem
 
 from PlaneClass import Plane, extractNumbers
-from WideAngleClass import WideAngle
+from WideAngleClass import WideAngle, create_equation, check_pos
 from CircleClass import Circle
 
 
@@ -28,6 +29,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.ClearBut.clicked.connect(self.clearPlane)
         self.AddAngleBut.clicked.connect(self.addAdngle)
         self.AddCircleBut.clicked.connect(self.addCicle)
+        self.CalculateBut.clicked.connect(self.solveProblem)
 
     def mousePressEvent(self, event):
         s = self.plane.scale
@@ -59,6 +61,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
                 secondCoords = self.plane.dots.popleft()
                 circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
                 self.plane.add(circle)
+                self.WarningLabel.setText("")
             except:
                 self.WarningLabel.setText("Недостаточно\nточек!")
         else:
@@ -83,6 +86,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
                 angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
                                   thirdCoords[0], thirdCoords[1])
                 self.plane.add(angle)
+                self.WarningLabel.setText("")
             except:
                 self.WarningLabel.setText("Недостаточно\nточек!")
         else:
@@ -101,11 +105,15 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.plane.clear()
         self.update()
 
+    def solveProblem(self):
+        area = self.plane.calculateCross()
+        self.textBrowser.setText(str(area))
+        self.update()
+
     def loadFromFile(self):
         try:
             fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
                                                 "Текстовый файл (*.txt)")[0]
-            print(fname)
             self.plane.addFromFile(fname)
         except:
             self.WarningLabel.setText("Выбран\nнекорректный\nфайл!")
@@ -146,13 +154,14 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             self.drawCircle(painter, a)  # рисует все окружности
         for a in self.plane.angles:
             self.drawAngle(painter, a)  # рисует все "широкие" углы
-        painter.setPen(QPen(Qt.gray, 5))
+        my_circle, my_angle = self.plane.my_circle, self.plane.my_angle
+        if my_circle is not None and my_angle is not None:
+            self.drawCross(painter, my_circle, my_angle)
         self.drawDots(painter)
 
     def drawGrid(self, painter):
         # рисует сетку координат
         c_x, c_y = self.plane.center
-        s = self.plane.scale
         painter.setPen(QPen(Qt.black, 2))
         painter.drawLine(self.min_x, c_y, self.max_x, c_y)
         painter.drawLine(c_x, self.min_y, c_x, self.max_y)
@@ -186,6 +195,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
 
     def drawDots(self, painter):
         # рисует точки
+        painter.setPen(QPen(Qt.gray, 5))
         c_x, c_y = self.plane.center
         s = self.plane.scale
         for coord in self.plane.dots:
@@ -206,6 +216,47 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         points += [QPoint(self.width(), self.max_y + 2), QPoint(self.width(), self.height())]
         points += [QPoint(0, self.height())]
         painter.drawPolygon(QPolygon(points))
+
+    def drawCross(self, painter, circle, angle):
+        # выделяет две фигуры и закрашивает их пересечение
+        c_x, c_y = self.plane.center
+        s = self.plane.scale
+        painter.setPen(QPen(Qt.green, 3))
+        self.drawAngle(painter, angle)
+        self.drawCircle(painter, circle)
+        painter.setPen(QPen(QColor("#fc0fc0"), 1))
+        x0, y0, r = circle.center[0] * s, circle.center[1] * s, round(circle.radius * s)
+        x1, y1, x2, y2 = angle.mainSegment[0] * s, angle.mainSegment[1] * s, angle.mainSegment[
+            2] * s, angle.mainSegment[3] * s
+        x4, y4, x5, y5 = angle.firstSegment[2] * s, angle.firstSegment[3] * s, angle.secondSegment[
+            2] * s, angle.secondSegment[3] * s
+        if angle.vertical:
+            pass
+        else:
+            m_k, m_b = create_equation(x1, y1, x2, y2)
+            k1, b1 = create_equation(x1, y1, x4, y4)
+            k2, b2 = create_equation(x2, y2, x5, y5)
+            points = list()
+            for x in range(x0 - r, x0 + r - 1):
+                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
+                for y in [y0 + dy, y0 - dy]:
+                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
+                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
+                        points.append(QPoint(x + c_x, -y + c_y))
+                y, yo = y0 + dy, y0 - dy
+                if min(x1, x2) <= x <= max(x1, x2):
+                    Y = round(m_k * x + m_b)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+                if min(x1, x4) <= x <= max(x1, x4):
+                    Y = round(k1 * x + b1)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+                if min(x2, x5) <= x <= max(x2, x5):
+                    Y = round(k2 * x + b2)
+                    if yo <= Y <= y:
+                        points.append(QPoint(x + c_x, -Y + c_y))
+            painter.drawPolygon(QPolygon(points))
 
 
 if __name__ == '__main__':

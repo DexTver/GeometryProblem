@@ -26,8 +26,10 @@ class GeometryWidget(QMainWindow):
         qp.begin(self)
         qp.setPen(QPen(Qt.black, 3))
         self.drawGrid(qp)
+        # my_angle = WideAngleClass.WideAngle(1, 1, 1, 20, 10, 10)
+        # my_circle = CircleClass.Circle(70, 40, 100, -20)
         my_angle = WideAngleClass.WideAngle(1, 1, 20, 20, 10, 10)
-        my_circle = CircleClass.Circle(70, 40, 100, -20)
+        my_circle = CircleClass.Circle(-20, -20, 20, 20)
         self.draw_angle(qp, my_angle)
         self.draw_circle(qp, my_circle)
         self.draw_cross(qp, my_circle, my_angle)
@@ -76,19 +78,19 @@ class GeometryWidget(QMainWindow):
                 if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
                         x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
                     points.append(QPoint(x + center_x, y + center_y))
-                y, yo = c_y + dy, c_y - dy
-                if min(x1, x2) <= x <= max(x1, x2):
-                    Y = round(m_k * x + m_b)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + center_x, Y + center_y))
-                if min(x1, x4) <= x <= max(x1, x4):
-                    Y = round(k1 * x + b1)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + center_x, Y + center_y))
-                if min(x2, x5) <= x <= max(x2, x5):
-                    Y = round(k2 * x + b2)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + center_x, Y + center_y))
+            y, yo = c_y + dy, c_y - dy
+            if min(x1, x2) <= x <= max(x1, x2):
+                Y = round(m_k * x + m_b)
+                if yo <= Y <= y:
+                    points.append(QPoint(x + center_x, Y + center_y))
+            if min(x1, x4) <= x <= max(x1, x4):
+                Y = round(k1 * x + b1)
+                if yo <= Y <= y:
+                    points.append(QPoint(x + center_x, Y + center_y))
+            if min(x2, x5) <= x <= max(x2, x5):
+                Y = round(k2 * x + b2)
+                if yo <= Y <= y:
+                    points.append(QPoint(x + center_x, Y + center_y))
         qp.drawPolygon(QPolygon(points))
 
     def drawFrame(self, painter):
