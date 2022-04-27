@@ -217,105 +217,98 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         # выделяет две фигуры и закрашивает их пересечение
         c_x, c_y = self.plane.center
         s = self.plane.scale
-        painter.setPen(QPen(Qt.green, 3))
-        self.drawAngle(painter, angle)
-        self.drawCircle(painter, circle)
-        painter.setPen(QPen(QColor("#fc0fc0"), 1))
         x0, y0, r = circle.center[0] * s, circle.center[1] * s, round(circle.radius * s)
         x1, y1, x2, y2 = angle.mainSegment[0] * s, angle.mainSegment[1] * s, angle.mainSegment[
             2] * s, angle.mainSegment[3] * s
         x4, y4, x5, y5 = angle.firstSegment[2] * s, angle.firstSegment[3] * s, angle.secondSegment[
             2] * s, angle.secondSegment[3] * s
-        points = list()
         if angle.vertical:
-            k1, b1 = create_equation(x1, y1, x4, y4)
-            k2, b2 = create_equation(x2, y2, x5, y5)
-            for x in range(x0 - r, x0 + r - 1):
-                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
-                for y in [y0 + dy, y0 - dy]:
-                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
-                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
-                        points.append(QPoint(x + c_x, -y + c_y))
-                y, yo = y0 + dy, y0 - dy
-                if x == x1:
-                    if yo <= y1 <= y:
-                        points.append(QPoint(x + c_x, -y1 + c_y))
-                    if yo <= y2 <= y:
-                        points.append(QPoint(x + c_x, -y2 + c_y))
-                    if y1 > y2:
-                        y1, y2 = y2, y1
-                    if y1 <= yo <= y2:
-                        points.append(QPoint(x + c_x, -yo + c_y))
-                    if y1 <= y <= y2:
-                        points.append(QPoint(x + c_x, -y + c_y))
-                if min(x1, x4) <= x <= max(x1, x4):
-                    Y = round(k1 * x + b1)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
-                if min(x2, x5) <= x <= max(x2, x5):
-                    Y = round(k2 * x + b2)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
-            painter.drawPolygon(QPolygon(points))
+            points = pointsVertical(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
+                                    circle.radius, angle.pos)
         elif angle.horizontal:
-            m_k, m_b = create_equation(x1, y1, x2, y2)
-            for x in range(x0 - r, x0 + r - 1):
-                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
-                for y in [y0 + dy, y0 - dy]:
-                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
-                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
-                        points.append(QPoint(x + c_x, -y + c_y))
-                y, yo = y0 + dy, y0 - dy
-                if min(x1, x2) <= x <= max(x1, x2):
-                    Y = round(m_k * x + m_b)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
-                if x == x1:
-                    if yo <= y1 <= y:
-                        points.append(QPoint(x + c_x, -y1 + c_y))
-                    if yo <= y4 <= y:
-                        points.append(QPoint(x + c_x, -y4 + c_y))
-                    if y1 > y4:
-                        y1, y4 = y4, y1
-                    if y1 <= yo <= y4:
-                        points.append(QPoint(x + c_x, -yo + c_y))
-                    if y1 <= y <= y4:
-                        points.append(QPoint(x + c_x, -y + c_y))
-                if x == x2:
-                    if yo <= y2 <= y:
-                        points.append(QPoint(x + c_x, -y2 + c_y))
-                    if yo <= y5 <= y:
-                        points.append(QPoint(x + c_x, -y5 + c_y))
-                    if y2 > y5:
-                        y2, y5 = y5, y2
-                    if y2 <= yo <= y5:
-                        points.append(QPoint(x + c_x, -yo + c_y))
-                    if y2 <= y <= y5:
-                        points.append(QPoint(x + c_x, -y + c_y))
+            points = pointsHorizontal(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
+                                      circle.radius, angle.pos)
         else:
-            m_k, m_b = create_equation(x1, y1, x2, y2)
-            k1, b1 = create_equation(x1, y1, x4, y4)
-            k2, b2 = create_equation(x2, y2, x5, y5)
-            for x in range(x0 - r, x0 + r - 1):
-                dy = round(sqrt(abs((circle.radius * s) ** 2 - (x - x0) ** 2)))
-                for y in [y0 + dy, y0 - dy]:
-                    if check_pos(x1, y1, x2, y2, x, y) == angle.pos and check_pos(
-                            x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
-                        points.append(QPoint(x + c_x, -y + c_y))
-                y, yo = y0 + dy, y0 - dy
-                if min(x1, x2) <= x <= max(x1, x2):
-                    Y = round(m_k * x + m_b)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
-                if min(x1, x4) <= x <= max(x1, x4):
-                    Y = round(k1 * x + b1)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
-                if min(x2, x5) <= x <= max(x2, x5):
-                    Y = round(k2 * x + b2)
-                    if yo <= Y <= y:
-                        points.append(QPoint(x + c_x, -Y + c_y))
+            points = pointsElse(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
+                                circle.radius, angle.pos)
+        painter.setPen(QPen(QColor("#fc0fc0"), 1))
         painter.drawPolygon(QPolygon(points))
+        painter.setPen(QPen(Qt.green, 3))
+        self.drawAngle(painter, angle)
+        self.drawCircle(painter, circle)
+
+
+def pointsVertical(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius):
+    points = list()
+    k1, b1 = create_equation(x1, y1, x4, y4)
+    k2, b2 = create_equation(x2, y2, x5, y5)
+    for x in range(x0 - r, x0 + r - 1):
+        dy = round(sqrt(abs((radius * s) ** 2 - (x - x0) ** 2)))
+        for y in [y0 + dy, y0 - dy]:
+            if min(y1, y2) <= y <= max(y1, y2) and min(x1, x4) <= x <= max(x1, x4):
+                points.append(QPoint(x + c_x, -y + c_y))
+        y, yo = y0 + dy, y0 - dy
+        if x == x1:
+            for Y in range(max(min(y1, y2), yo), min(max(y1, y2), y)):
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if min(x1, x4) <= x <= max(x1, x4):
+            Y = round(k1 * x + b1)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if min(x2, x5) <= x <= max(x2, x5):
+            Y = round(k2 * x + b2)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+    return points
+
+
+def pointsHorizontal(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius, pos):
+    points = list()
+    m_k, m_b = create_equation(x1, y1, x2, y2)
+    for x in range(x0 - r, x0 + r - 1):
+        dy = round(sqrt(abs((radius * s) ** 2 - (x - x0) ** 2)))
+        for y in [y0 + dy, y0 - dy]:
+            if min(x1, x2) <= x <= max(x1, x2) and min(y1, y4) <= y <= max(y1, y4):
+                points.append(QPoint(x + c_x, -y + c_y))
+        y, yo = y0 + dy, y0 - dy
+        if min(x1, x2) <= x <= max(x1, x2):
+            Y = round(m_k * x + m_b)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if x == x1:
+            for Y in range(max(min(y1, y4), yo), min(max(y1, y4), y)):
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if x == x2:
+            for Y in range(max(min(y2, y5), yo), min(max(y2, y5), y)):
+                points.append(QPoint(x + c_x, -Y + c_y))
+    return points
+
+
+def pointsElse(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius, pos):
+    points = list()
+    m_k, m_b = create_equation(x1, y1, x2, y2)
+    k1, b1 = create_equation(x1, y1, x4, y4)
+    k2, b2 = create_equation(x2, y2, x5, y5)
+    for x in range(x0 - r, x0 + r - 1):
+        dy = round(sqrt(abs((radius * s) ** 2 - (x - x0) ** 2)))
+        for y in [y0 + dy, y0 - dy]:
+            if check_pos(x1, y1, x2, y2, x, y) == pos and check_pos(
+                    x1, y1, x4, y4, x, y) != check_pos(x2, y2, x5, y5, x, y):
+                points.append(QPoint(x + c_x, -y + c_y))
+        y, yo = y0 + dy, y0 - dy
+        if min(x1, x2) <= x <= max(x1, x2):
+            Y = round(m_k * x + m_b)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if min(x1, x4) <= x <= max(x1, x4):
+            Y = round(k1 * x + b1)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+        if min(x2, x5) <= x <= max(x2, x5):
+            Y = round(k2 * x + b2)
+            if yo <= Y <= y:
+                points.append(QPoint(x + c_x, -Y + c_y))
+    return points
 
 
 if __name__ == '__main__':

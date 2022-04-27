@@ -7,17 +7,11 @@ class WideAngle:
         self.vertical, self.horizontal = False, False
         self.pos = pos = check_pos(x1, y1, x2, y2, x3, y3)
         if x1 == x2:
-            if x3 >= x1:
-                x4 = x1 + 10000
-            else:
-                x4 = x1 - 10000
+            x4 = x1 + 10000 if x3 >= x1 else x1 - 10000
             y4 = y1
             self.vertical = True
         elif y1 == y2:
-            if y3 - y1 >= 0:
-                y4 = y1 + 10000
-            else:
-                y4 = y1 - 10000
+            y4 = y1 + 10000 if y3 - y1 >= 0 else y1 - 10000
             x4 = x1
             self.horizontal = True
         else:
@@ -30,20 +24,14 @@ class WideAngle:
             line = ((x4 - x2) * (y1 - y2) - (y4 - y2) * (x1 - x2)) > 0
             if pos == line:
                 if abs(y1 - y4) > 1:
-                    if y4 > y1:
-                        y4 = y1 + 10000
-                    else:
-                        y4 = y1 - 10000
+                    y4 = y1 + 10000 if y4 > y1 else y1 - 10000
                     x4 = (b1 - y4) * k
                 else:
                     x4 = x1 + 10000
                     y4 = -x4 / k + b1
             else:
                 if abs(y1 - y4) > 1:
-                    if y4 > y1:
-                        y4 = y1 - 10000
-                    else:
-                        y4 = y1 + 10000
+                    y4 = y1 - 10000 if y4 > y1 else y1 + 10000
                     x4 = (b1 - y4) * k
                 else:
                     x4 = x1 - 10000
@@ -54,7 +42,7 @@ class WideAngle:
 
 
 def check_pos(x1, y1, x2, y2, x3, y3):
-    return ((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) > 0
+    return ((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) >= 0
 
 
 def create_equation(x1, y1, x2, y2):

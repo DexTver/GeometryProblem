@@ -44,17 +44,17 @@ class Plane:
         txt.close()
 
     def calculateCross(self):
-        self.my_angle = WideAngle(20, 20, 20, -15, 50, 50)
-        self.my_circle = Circle(-10, -10, 30, 30)
+        self.my_angle = WideAngle(10, 20, 0, 20, 30, 50)
+        self.my_circle = Circle(15, 5, 30, 15)
         return 100
 
 
-def extractNumbers(str):
+def extractNumbers(string):
     points = list()
     x = ""
-    for i in range(len(str)):
-        if str[i].isdigit():
-            x += str[i]
+    for i in range(len(string)):
+        if string[i].isdigit():
+            x += string[i]
         elif x != "":
             points.append(int(x))
             x = ""
