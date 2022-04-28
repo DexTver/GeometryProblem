@@ -103,6 +103,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
 
     def clearPlane(self):
         self.plane.clear()
+        self.textBrowser.setText("")
         self.update()
 
     def solveProblem(self):
@@ -173,9 +174,10 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         # рисует угол
         c_x, c_y = self.plane.center
         s = self.plane.scale
-        x1, y1, x2, y2, x4, y4, x5, y5 = a.mainSegment[0] * s, -a.mainSegment[1] * s, a.mainSegment[
-            2] * s, -a.mainSegment[3] * s, a.firstSegment[2] * s, -a.firstSegment[3] * s, \
-                                         a.secondSegment[2] * s, -a.secondSegment[3] * s
+        x1, y1, x2, y2 = a.mainSegment[0] * s, -a.mainSegment[1] * s, a.mainSegment[2] * s, - \
+            a.mainSegment[3] * s
+        x4, y4, x5, y5 = a.firstSegment[2] * s, -a.firstSegment[3] * s, a.secondSegment[2] * s, - \
+            a.secondSegment[3] * s
         # Знак Y меняется, т.к. система координат в окне
         # зеркально отражена привычной Декартовой системе.
         painter.drawLine(x1 + c_x, y1 + c_y, x2 + c_x, y2 + c_y)
@@ -262,7 +264,7 @@ def pointsVertical(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radiu
     return points
 
 
-def pointsHorizontal(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius, pos):
+def pointsHorizontal(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius):
     points = list()
     m_k, m_b = create_equation(x1, y1, x2, y2)
     for x in range(x0 - r, x0 + r - 1):
