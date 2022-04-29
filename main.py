@@ -34,7 +34,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
     def mousePressEvent(self, event):
         s = self.plane.scale
         coord = (event.x(), event.y())
-        if self.min_y < coord[0] < self.max_x and self.min_y < coord[1] < self.max_y:
+        if self.min_x < coord[0] < self.max_x and self.min_y < coord[1] < self.max_y:
             coord = ((event.x() - self.plane.center[0] + s - 1) // s,
                      (-event.y() + self.plane.center[1]) // s)
             self.plane.add(coord)
@@ -108,7 +108,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
 
     def solveProblem(self):
         area = self.plane.calculateCross()
-        self.textBrowser.setText(str(area))
+        self.textBrowser.setText(str(area) if area != 0 else "")
         self.update()
 
     def loadFromFile(self):
