@@ -272,7 +272,8 @@ def roundSegmentArea(x1, y1, x2, y2, r):
     return area
 
 
-def discriminant(a, b, c, k, r):
-    D4 = -(a ** 2) - (2 * a * k * b) + (2 * a * k * c) - (b ** 2) + (2 * b * c) - (c ** 2)
-    D4 += (r ** 2) + (k ** 2) * (r ** 2) - (2 * (k ** 2) * (a ** 2))
+def discriminant(x0, b, y0, k, r):
+    # D4 = -(a ** 2) - (2 * a * k * b) + (2 * a * k * c) - (b ** 2) + (2 * b * c) - (c ** 2)
+    # D4 += (r ** 2) + (k ** 2) * (r ** 2) - (2 * (k ** 2) * (a ** 2))
+    D4 = (k * b - x0 - k * y0) ** 2 - (1 + (k ** 2)) * (x0 ** 2 + b ** 2 - 2 * y0 * b + y0 ** 2 - r ** 2)
     return D4
