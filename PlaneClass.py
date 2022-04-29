@@ -35,7 +35,7 @@ class Plane:
         str = txt.readlines()
         for s in str:
             points = extractNumbers(s)
-            if len(points) == 4:
+            if 3 < len(points) < 6:
                 self.circles.append(Circle(points[0], points[1], points[2], points[3]))
             else:
                 self.angles.append(

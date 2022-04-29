@@ -27,8 +27,8 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.DrawBut.clicked.connect(self.update)
         self.LoadFileBut.clicked.connect(self.loadFromFile)
         self.ClearBut.clicked.connect(self.clearPlane)
-        self.AddAngleBut.clicked.connect(self.addAdngle)
-        self.AddCircleBut.clicked.connect(self.addCicle)
+        self.AddAngleBut.clicked.connect(self.addAngle)
+        self.AddCircleBut.clicked.connect(self.addCircle)
         self.CalculateBut.clicked.connect(self.solveProblem)
 
     def mousePressEvent(self, event):
@@ -51,7 +51,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             if event.key() == Qt.Key_Up:
                 self.rotatePlane("up")
 
-    def addCicle(self):
+    def addCircle(self):
         firstCoords = self.CenterCoordCircle.toPlainText()
         secondCoords = self.SecondCoordCircle.toPlainText()
         if firstCoords == "" or secondCoords == "":
@@ -73,7 +73,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             self.SecondCoordCircle.setPlainText("")
         self.update()
 
-    def addAdngle(self):
+    def addAngle(self):
         firstCoords = self.FirstCoordAngle.toPlainText()
         secondCoords = self.SecondCoordAngle.toPlainText()
         thirdCoords = self.ThirdCoordAngle.toPlainText()
