@@ -8,39 +8,43 @@ from math import sqrt, pi, acos, sin
 class Plane:
     def __init__(self, center_x, center_y, scale=1):
         self.scale = round(scale)
-        self.dots = deque()
-        self.circles = list()
-        self.angles = list()
-        self.my_circle = None
-        self.my_angle = None
-        self.center = (center_x, center_y)
+        self.dots = deque()  # очередь всех точек
+        self.circles = list()  # список всех окружностей
+        self.angles = list()  # список всех "лучей"
+        self.my_circle = None  # окружность из искомой пары
+        self.my_angle = None  # "луч" з искомой пары
+        self.center = (center_x, center_y)  # координаты центра поля
 
-    def clear(self):
+    def clear(self):  # очищает все массивы и искомую пару
         self.circles.clear()
         self.angles.clear()
+        self.dots.clear()
         self.my_circle = None
         self.my_angle = None
 
-    def add(self, obj):
+    def add(self, obj):  # добавляет объекты в массивы в зависимости от типа
         try:
             if obj.type == "Circle":
                 self.circles.append(obj)
             elif obj.type == "Angle":
                 self.angles.append(obj)
-        except:
+        except:  # точка передаётся как tuple, у которого нет метода type
+            # из-за чего возникает ошибка и мы понимаем, что нам пихают точку
             self.dots.append(obj)
 
-    def addFromFile(self, fname):
-        txt = open(fname, mode="r")
+    def addFromFile(self, fname):  # добавление из файла
+        txt = open(fname, mode="r")  # открываем файл
+        # вытаскиваем массив всех строчек, считая, что каждая строчка отвечает за отдельную фигуру
         str = txt.readlines()
-        for s in str:
-            points = extractNumbers(s)
+        for s in str:  # перебираем все строки из списка
+            points = extractNumbers(s)  # магической функцией выделяем из строки числа
+            # если точек достаточно, чтобы построить окружность, но не достаточно для "луча"
             if 3 < len(points) < 6:
                 self.circles.append(Circle(points[0], points[1], points[2], points[3]))
-            else:
+            elif 6 <= len(points):
                 self.angles.append(
                     WideAngle(points[0], points[1], points[2], points[3], points[4], points[5]))
-        txt.close()
+        txt.close()  # закрываем файл
 
     def calculateCross(self):
         max_area = 0
@@ -251,21 +255,21 @@ def findCrossPoints(angle, circle):
     return firstPoints, mainPoints, secondPoints, inAngle
 
 
-def extractNumbers(string):
-    points = list()
-    x = ""
-    for i in range(len(string)):
-        if string[i].isdigit():
+def extractNumbers(string):  # "вытаскивает" числа из строки
+    points = list()  # массив чисел
+    x = ""  # идущее сейчас "число"
+    for i in range(len(string)):  # перебираем все символы строки
+        if string[i].isdigit():  # если символ - цифра, то добавляем его к идущему сейчас "числу"
             x += string[i]
-        elif x != "":
+        elif x != "":  # иначе добавляем идущее сейчас число в points
             points.append(int(x))
             x = ""
     if x != "":
         points.append(int(x))
-    return points
+    return points  # возвращаем список всех точек
 
 
-def roundSegmentArea(x1, y1, x2, y2, r):
+def roundSegmentArea(x1, y1, x2, y2, r):  # ищет площадь фигуры, отсечённую хордой
     l = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     a = acos((2 * r ** 2 - l ** 2) / (2 * r ** 2))
     area = ((r ** 2) / 2) * (a - sin(a))
@@ -273,7 +277,6 @@ def roundSegmentArea(x1, y1, x2, y2, r):
 
 
 def discriminant(x0, b, y0, k, r):
-    # D4 = -(a ** 2) - (2 * a * k * b) + (2 * a * k * c) - (b ** 2) + (2 * b * c) - (c ** 2)
-    # D4 += (r ** 2) + (k ** 2) * (r ** 2) - (2 * (k ** 2) * (a ** 2))
-    D4 = (k * b - x0 - k * y0) ** 2 - (1 + (k ** 2)) * (x0 ** 2 + b ** 2 - 2 * y0 * b + y0 ** 2 - r ** 2)
+    D4 = (k * b - x0 - k * y0) ** 2 - (1 + (k ** 2)) * (
+                x0 ** 2 + b ** 2 - 2 * y0 * b + y0 ** 2 - r ** 2)
     return D4

@@ -1,7 +1,11 @@
+"""Intro.
+Так получилось, что при проектировании смешались понятия "широкий угол" и "широкий луч",
+поэтому на протяжении всего кода встречается WideAngle и Angle. Несмотря на то, что это
+переводиться, как "угол", подразумевается луч."""
+
 import sys
 from math import sqrt
 
-from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QPolygon, QColor
 from PyQt5.QtCore import Qt, QPoint
@@ -15,10 +19,10 @@ from CircleClass import Circle
 class GeometryWidget(QMainWindow, Ui_GeometryProblem):
     def __init__(self):
         super().__init__()
-        # uic.loadUi("window.ui", self)
         self.setupUi(self)
-        self.max_x, self.max_y, self.min_x, self.min_y = 799, 449, 199, 1
-        self.plane = Plane(500, 225)
+        self.max_x, self.max_y, self.min_x, self.min_y = 799, 449, 199, 1  # границы рамки
+        self.plane = Plane(500, 225)  # создаём поле с центром в точке (500, 225)
+        # присваиваем функции кнопкам
         self.LeftBut.clicked.connect(lambda: self.rotatePlane("left"))
         self.RightBut.clicked.connect(lambda: self.rotatePlane("right"))
         self.DownBut.clicked.connect(lambda: self.rotatePlane("down"))
@@ -31,54 +35,84 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.AddCircleBut.clicked.connect(self.addCircle)
         self.CalculateBut.clicked.connect(self.solveProblem)
 
-    def mousePressEvent(self, event):
-        s = self.plane.scale
-        coord = (event.x(), event.y())
+    def paintEvent(self, event):  # функция, которая отвечает за рисование
+        painter = QPainter()  # создаём Painter
+        painter.begin(self)
+        self.drawShapes(painter)  # рисует все фигуры
+        self.drawFrame(painter)  # рисует рамку координатной плоскости
+        self.drawBoards(painter)  # закрашивает поле вне координатной плоскости
+        painter.end()  # выключаем Painter
+
+    def mousePressEvent(self, event):  # считывание точек с мышки
+        s = self.plane.scale  # масштаб
+        coord = (event.x(), event.y())  # получаем координаты клика
+        # проверяем был ли клик внутри рамки
         if self.min_x < coord[0] < self.max_x and self.min_y < coord[1] < self.max_y:
+            # преобразуем полученные координаты в нужный для вычислений "формат"
             coord = ((event.x() - self.plane.center[0] + s - 1) // s,
                      (-event.y() + self.plane.center[1]) // s)
-            self.plane.add(coord)
-            self.update()
+            # *меняем знак y, т.к. система координат окна не совпадает с привычной декартовой
+            # системой
+            self.plane.add(coord)  # добавляем точку на plane
+            self.update()  # заново отрисовываем
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event):  # регистрируем нажатие на клавиатуру
         if int(event.modifiers()) == Qt.ControlModifier:
-            if event.key() == Qt.Key_Left:
+            if event.key() == Qt.Key_Left:  # стрелочка влево
                 self.rotatePlane("left")
-            if event.key() == Qt.Key_Right:
+            if event.key() == Qt.Key_Right:  # стрелочка вправо
                 self.rotatePlane("right")
-            if event.key() == Qt.Key_Down:
+            if event.key() == Qt.Key_Down:  # стрелочка вниз
                 self.rotatePlane("down")
-            if event.key() == Qt.Key_Up:
+            if event.key() == Qt.Key_Up:  # стрелочка вверх
                 self.rotatePlane("up")
 
-    def addCircle(self):
+    def loadFromFile(self):  # загрузка точек из файла
+        try:
+            # открываем диалоговое окно для выбора файла
+            fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
+                                                "Текстовый файл (*.txt)")[0]
+            # передаём путь к файлу встроенной в plane функции
+            self.plane.addFromFile(fname)
+        except:  # если возникли какие-то проблемы со считыванием из файла (из-за недостатка
+            # координат или неверного формата) информируем пользователя
+            self.WarningLabel.setText("Выбран\nнекорректный\nфайл!")
+        self.update()  # всё отрисовываем
+
+    def addCircle(self):  # добавляем окружность на plane
+        # получаем координаты из соответствующих полей
         firstCoords = self.CenterCoordCircle.toPlainText()
         secondCoords = self.SecondCoordCircle.toPlainText()
         if firstCoords == "" or secondCoords == "":
-            # считывание с мышки
+            # если хотя бы одно из полей пустое, пытаемся взять точки из начала очереди
             try:
                 firstCoords = self.plane.dots.popleft()
                 secondCoords = self.plane.dots.popleft()
                 circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
                 self.plane.add(circle)
                 self.WarningLabel.setText("")
-            except:
+            except:  # если в очереди недостаточно точек, выводим предупреждение
                 self.WarningLabel.setText("Недостаточно\nточек!")
         else:
+            # с помощью "магической" функции достаём числа из строки
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
+            # создаём объект класса Circle с полученными ранее параметрами
             circle = Circle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1])
+            # добавляем окружность на plane
             self.plane.add(circle)
+            # очищаем поля ввода
             self.CenterCoordCircle.setPlainText("")
             self.SecondCoordCircle.setPlainText("")
-        self.update()
+        self.update()  # всё отрисовываем
 
-    def addAngle(self):
+    def addAngle(self):  # добавляем "луч" на plane
+        # получаем координаты из соответствующих полей
         firstCoords = self.FirstCoordAngle.toPlainText()
         secondCoords = self.SecondCoordAngle.toPlainText()
         thirdCoords = self.ThirdCoordAngle.toPlainText()
         if firstCoords == "" or secondCoords == "" or thirdCoords == "":
-            # считывание с мышки
+            # если хотя бы одно из полей пустое, пытаемся взять точки из начала очереди
             try:
                 firstCoords = self.plane.dots.popleft()
                 secondCoords = self.plane.dots.popleft()
@@ -87,45 +121,37 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
                                   thirdCoords[0], thirdCoords[1])
                 self.plane.add(angle)
                 self.WarningLabel.setText("")
-            except:
+            except:  # если в очереди недостаточно точек, выводим предупреждение
                 self.WarningLabel.setText("Недостаточно\nточек!")
         else:
+            # с помощью "магической" функции достаём числа из строки
             firstCoords = extractNumbers(firstCoords)
             secondCoords = extractNumbers(secondCoords)
             thirdCoords = extractNumbers(thirdCoords)
+            # создаём объект класса WideAngle с полученными ранее параметрами
             angle = WideAngle(firstCoords[0], firstCoords[1], secondCoords[0], secondCoords[1],
                               thirdCoords[0], thirdCoords[1])
+            # добавляем "луч" на plane
             self.plane.add(angle)
+            # очищаем поля ввода
             self.FirstCoordAngle.setPlainText("")
             self.SecondCoordAngle.setPlainText("")
             self.ThirdCoordAngle.setPlainText("")
-        self.update()
+        self.update()  # всё отрисовываем
 
-    def clearPlane(self):
-        self.plane.clear()
-        self.textBrowser.setText("")
-        self.update()
+    def solveProblem(self):  # считаем наибольшую площадь
+        area = self.plane.calculateCross()  # функция класса plane, которая ищет наибольшую площадь,
+        # а сами фигуры записывает в plane.my_circle и plane.my_angle
+        self.textBrowser.setText(str(area) if area != 0 else "")  # выводим значение площади
+        self.update()  # всё отрисовываем
 
-    def solveProblem(self):
-        area = self.plane.calculateCross()
-        self.textBrowser.setText(str(area) if area != 0 else "")
-        self.update()
-
-    def loadFromFile(self):
-        try:
-            fname = QFileDialog.getOpenFileName(self, "Выбрать файл с точками", "",
-                                                "Текстовый файл (*.txt)")[0]
-            self.plane.addFromFile(fname)
-        except:
-            self.WarningLabel.setText("Выбран\nнекорректный\nфайл!")
-        self.update()
-
-    def scalePlane(self, value):
+    def scalePlane(self, value):  # преобразует и передаёт значение ползунка внутренней переменной
         self.plane.scale = max(value // 5, 1)
-        self.update()
+        self.update()  # всё отрисовываем
 
-    def rotatePlane(self, command):
-        const = 10 * self.plane.scale
+    def rotatePlane(self, command):  # перемещение по полю
+        const = 10 * self.plane.scale  # некоторая константа, на которую сдвигаемся
+        # меняем положение в зависимости от команды
         if command == "left":
             self.plane.center = (self.plane.center[0] + const, self.plane.center[1])
         elif command == "right":
@@ -134,27 +160,21 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             self.plane.center = (self.plane.center[0], self.plane.center[1] + const)
         elif command == "down":
             self.plane.center = (self.plane.center[0], self.plane.center[1] - const)
-        self.update()
+        self.update()  # всё отрисовываем
 
-    def paintEvent(self, event):
-        painter = QPainter()
-        painter.begin(self)
-        self.drawShapes(painter)  # рисует все фигуры
-        self.drawFrame(painter)  # рисует рамку координатной плоскости
-        self.drawBoards(painter)  # закрашивает поле вне координатной плоскости
-        painter.end()
-
-    def drawShapes(self, painter):
-        self.drawGrid(painter)  # рисует сетку координат
+    def drawShapes(self, painter):  # рисуем фигуры
+        self.drawGrid(painter)  # рисуем сетку координат
         painter.setPen(QPen(Qt.black, 1))
         for a in self.plane.circles:
-            self.drawCircle(painter, a)  # рисует все окружности
+            self.drawCircle(painter, a)  # рисуем все окружности
         for a in self.plane.angles:
-            self.drawAngle(painter, a)  # рисует все "широкие" углы
+            self.drawAngle(painter, a)  # рисуем все "широкие" лучи
+        # получаем пару с наибольшим пересечением
         my_circle, my_angle = self.plane.my_circle, self.plane.my_angle
-        if my_circle is not None and my_angle is not None:
+        if my_circle is not None and my_angle is not None:  # если пара вообще есть
+            # выделяем фигуры и закрашиваем пересечение
             self.drawCross(painter, my_circle, my_angle)
-        self.drawDots(painter)
+        self.drawDots(painter)  # рисуем все точки
 
     def drawGrid(self, painter):
         # рисует сетку координат
@@ -171,7 +191,7 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         painter.drawPolygon(QPolygon(yArrow))
 
     def drawAngle(self, painter, a):
-        # рисует угол
+        # рисует луч
         c_x, c_y = self.plane.center
         s = self.plane.scale
         x1, y1, x2, y2 = a.mainSegment[0] * s, -a.mainSegment[1] * s, a.mainSegment[2] * s, - \
@@ -238,6 +258,11 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         painter.setPen(QPen(Qt.green, 3))
         self.drawAngle(painter, angle)
         self.drawCircle(painter, circle)
+
+    def clearPlane(self):  # очистка окна
+        self.plane.clear()  # очистка plane
+        self.textBrowser.setText("")  # очистка поля с ошибками
+        self.update()  # всё отрисовываем
 
 
 def pointsVertical(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius):
@@ -313,6 +338,7 @@ def pointsElse(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s, radius, p
     return points
 
 
+# фишка питона, чтобы запускался только этот файл
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = GeometryWidget()

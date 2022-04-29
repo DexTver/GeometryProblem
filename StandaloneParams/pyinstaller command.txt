@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --name=Geometry --icon=StandaloneParams/geometry.ico main.py
