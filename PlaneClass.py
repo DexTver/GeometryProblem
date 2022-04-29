@@ -102,7 +102,7 @@ class Plane:
                                                  firstPoints[1][0], firstPoints[1][1], r)
                         area -= roundSegmentArea(secondPoints[0][0], secondPoints[0][1],
                                                  secondPoints[1][0], secondPoints[1][0], r)
-                    if len(mainPoints) == 2:
+                    elif len(mainPoints) == 2:
                         if len(firstPoints) == 2:
                             Points = firstPoints
                         elif len(secondPoints) == 2:
@@ -158,31 +158,28 @@ def findCrossPoints(angle, circle):
         if min(y1, y2) <= y0 <= max(y1, y2) and min(x1, x4) <= x0 <= max(x1, x4):
             inAngle = True
         # Точки пересечения окружности с главным сегментом (x = const)
-        y = r ** 2 - x1 ** 2
+        y = r ** 2 - (x1 - x0) ** 2
         if y >= 0:
-            y = sqrt(y)
-            yo = -y
+            y, yo = y0 + sqrt(y), y0 - sqrt(y)
             if min(y1, y2) <= y <= max(y1, y2):
                 mainPoints.append((x1, y))
             if min(y1, y2) <= yo <= max(y1, y2):
                 mainPoints.append((x1, yo))
         # Точки пересечения с "первым" сегментом (y = const)
-        x = r ** 2 - y1 ** 2
+        x = r ** 2 - (y1 - y0) ** 2
         if x >= 0:
-            x = sqrt(x)
-            xo = -x
-            if min(x1, x4) <= x <= min(x1, x4):
+            x, xo = x0 + sqrt(x), x0 - sqrt(x)
+            if min(x1, x4) <= x <= max(x1, x4):
                 firstPoints.append((x, y1))
-            if min(x1, x4) <= xo <= min(x1, x4):
+            if min(x1, x4) <= xo <= max(x1, x4):
                 firstPoints.append((xo, y1))
-        # Точки пересечения со "вторым" сегментом
-        x = r ** 2 - y2 ** 2
+        # Точки пересечения со "вторым" сегментом (y = const)
+        x = r ** 2 - (y2 - y0) ** 2
         if x >= 0:
-            x = sqrt(x)
-            xo = -x
-            if min(x2, x5) <= x <= min(x2, x5):
+            x, xo = x0 + sqrt(x), x0 - sqrt(x)
+            if min(x2, x5) <= x <= max(x2, x5):
                 secondPoints.append((x, y2))
-            if min(x2, x5) <= xo <= min(x2, x5):
+            if min(x2, x5) <= xo <= max(x2, x5):
                 secondPoints.append((xo, y2))
     elif angle.horizontal:
         if min(x1, x2) <= x0 <= max(x1, x2) and min(y1, y4) <= y0 <= max(y1, y4):
@@ -191,9 +188,9 @@ def findCrossPoints(angle, circle):
         x = r ** 2 - (y1 - y0) ** 2
         if x >= 0:
             x, xo = x0 + sqrt(x), x0 - sqrt(x)
-            if min(x1, x2) <= x <= min(x1, x2):
+            if min(x1, x2) <= x <= max(x1, x2):
                 mainPoints.append((x, y1))
-            if min(x1, x2) <= xo <= min(x1, x2):
+            if min(x1, x2) <= xo <= max(x1, x2):
                 mainPoints.append((xo, y1))
         # Точки пересечения с "первым" сегментом (x = const)
         y = r ** 2 - (x1 - x0) ** 2
@@ -203,7 +200,7 @@ def findCrossPoints(angle, circle):
                 firstPoints.append((x1, y))
             if min(y1, y4) <= yo <= max(y1, y4):
                 firstPoints.append((x1, yo))
-        # Точки пересечения со "вторым" сегментом
+        # Точки пересечения со "вторым" сегментом (x = const)
         y = r ** 2 - (x2 - x0) ** 2
         if y >= 0:
             y, yo = y0 + sqrt(y), y0 - sqrt(y)

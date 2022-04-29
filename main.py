@@ -226,10 +226,10 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
             2] * s, angle.secondSegment[3] * s
         if angle.vertical:
             points = pointsVertical(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
-                                    circle.radius, angle.pos)
+                                    circle.radius)
         elif angle.horizontal:
             points = pointsHorizontal(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
-                                      circle.radius, angle.pos)
+                                      circle.radius)
         else:
             points = pointsElse(x0, y0, r, x1, y1, x2, y2, x4, y4, x5, y5, c_x, c_y, s,
                                 circle.radius, angle.pos)
