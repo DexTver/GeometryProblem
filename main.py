@@ -14,6 +14,7 @@ from design.window import Ui_GeometryProblem
 from PlaneClass import Plane, extractNumbers
 from WideAngleClass import WideAngle, create_equation, check_pos
 from CircleClass import Circle
+from DigitClass import giveDigit, steps
 
 
 class GeometryWidget(QMainWindow, Ui_GeometryProblem):
@@ -190,6 +191,45 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         # рисуем стрелочки
         painter.drawPolygon(QPolygon(xArrow))
         painter.drawPolygon(QPolygon(yArrow))
+        self.drawDigits(painter)
+
+    def drawDigits(self, painter):
+        painter.setPen(QPen(Qt.black, 1))
+        c_x, c_y = self.plane.center
+        s = self.plane.scale
+        step = steps[s - 1]
+        coord = step
+        for x in range(c_x + step * s, self.max_x, step * s):
+            digit = giveDigit(coord, x, c_y + 7)
+            coord += step
+            for nums in digit:
+                for line in nums:
+                    painter.drawLine(line[0], line[1], line[2], line[3])
+            painter.drawLine(x, c_y - 3, x, c_y + 3)
+        coord = -step
+        for x in range(c_x - step * s, self.min_x, -step * s):
+            digit = giveDigit(coord, x, c_y + 7)
+            coord -= step
+            for nums in digit:
+                for line in nums:
+                    painter.drawLine(line[0], line[1], line[2], line[3])
+            painter.drawLine(x, c_y - 3, x, c_y + 3)
+        coord = -step
+        for y in range(c_y + step * s, self.max_y, step * s):
+                digit = giveDigit(coord, c_x - 10, y, rightCorner=True)
+                coord -= step
+                for nums in digit:
+                    for line in nums:
+                        painter.drawLine(line[0], line[1], line[2], line[3])
+                painter.drawLine(c_x - 3, y, c_x + 3, y)
+        coord = step
+        for y in range(c_y - step * s, self.min_y, -step * s):
+                digit = giveDigit(coord, c_x - 10, y, rightCorner=True)
+                coord += step
+                for nums in digit:
+                    for line in nums:
+                        painter.drawLine(line[0], line[1], line[2], line[3])
+                painter.drawLine(c_x - 3, y, c_x + 3, y)
 
     def drawAngle(self, painter, a):
         # рисует луч
