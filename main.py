@@ -194,42 +194,47 @@ class GeometryWidget(QMainWindow, Ui_GeometryProblem):
         self.drawDigits(painter)
 
     def drawDigits(self, painter):
-        painter.setPen(QPen(Qt.black, 1))
-        c_x, c_y = self.plane.center
-        s = self.plane.scale
-        step = steps[s - 1]
-        coord = step
+        # рисует цифры
+        painter.setPen(QPen(Qt.black, 1))  # выбираем цвет
+        c_x, c_y = self.plane.center  # центр оси координат
+        s = self.plane.scale  # масштаб
+        step = steps[s - 1]  # узнаем единичный отрезок
+        coord = step  # стартовая координата
         for x in range(c_x + step * s, self.max_x, step * s):
-            digit = giveDigit(coord, x, c_y + 7)
+            # рисуем цифры от центра до правой границы
+            digit = giveDigit(coord, x, c_y + 7)  # получаем массив линий числа
             coord += step
-            for nums in digit:
-                for line in nums:
-                    painter.drawLine(line[0], line[1], line[2], line[3])
-            painter.drawLine(x, c_y - 3, x, c_y + 3)
+            for nums in digit:  # перебираем все цифры(линии)
+                for line in nums:  # перебираем все линии цифры
+                    painter.drawLine(line[0], line[1], line[2], line[3])  # рисуем линию
+            painter.drawLine(x, c_y - 3, x, c_y + 3)  # рисуем черточки на оси
         coord = -step
         for x in range(c_x - step * s, self.min_x, -step * s):
-            digit = giveDigit(coord, x, c_y + 7)
+            # рисуем цифры от центра до левой границы
+            digit = giveDigit(coord, x, c_y + 7)  # получаем массив линий числа
             coord -= step
-            for nums in digit:
-                for line in nums:
-                    painter.drawLine(line[0], line[1], line[2], line[3])
-            painter.drawLine(x, c_y - 3, x, c_y + 3)
+            for nums in digit:  # перебираем все цифры(линии)
+                for line in nums:  # перебираем все линии цифры
+                    painter.drawLine(line[0], line[1], line[2], line[3])  # рисуем линию
+            painter.drawLine(x, c_y - 3, x, c_y + 3)  # рисуем черточки на оси
         coord = -step
         for y in range(c_y + step * s, self.max_y, step * s):
-                digit = giveDigit(coord, c_x - 10, y, rightCorner=True)
-                coord -= step
-                for nums in digit:
-                    for line in nums:
-                        painter.drawLine(line[0], line[1], line[2], line[3])
-                painter.drawLine(c_x - 3, y, c_x + 3, y)
+            # рисуем цифры от центра до нижней границы
+            digit = giveDigit(coord, c_x - 10, y, rightCorner=True)  # получаем массив линий числа
+            coord -= step
+            for nums in digit:  # перебираем все цифры(линии)
+                for line in nums:  # перебираем все линии цифры
+                    painter.drawLine(line[0], line[1], line[2], line[3])  # рисуем линию
+            painter.drawLine(c_x - 3, y, c_x + 3, y)  # рисуем черточки на оси
         coord = step
         for y in range(c_y - step * s, self.min_y, -step * s):
-                digit = giveDigit(coord, c_x - 10, y, rightCorner=True)
-                coord += step
-                for nums in digit:
-                    for line in nums:
-                        painter.drawLine(line[0], line[1], line[2], line[3])
-                painter.drawLine(c_x - 3, y, c_x + 3, y)
+            # рисуем цифры от центра до верхней границы
+            digit = giveDigit(coord, c_x - 10, y, rightCorner=True)  # получаем массив линий числа
+            coord += step
+            for nums in digit:  # перебираем все цифры(линии)
+                for line in nums:  # перебираем все линии цифры
+                    painter.drawLine(line[0], line[1], line[2], line[3])  # рисуем линию
+            painter.drawLine(c_x - 3, y, c_x + 3, y)  # рисуем черточки на оси
 
     def drawAngle(self, painter, a):
         # рисует луч

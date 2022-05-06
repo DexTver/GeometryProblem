@@ -1,22 +1,22 @@
-steps = [30, 17, 11, 8, 6, 5, 4, 3, 2, 2]
+steps = [30, 17, 11, 8, 6, 5, 4, 3, 2, 2]  # шаги сетки при разных масштабах
 
 
-def giveDigit(num, c_x, c_y, rightCorner=False):
-    numbs = list()
-    num = str(num)
-    n = len(num)
+def giveDigit(num, c_x, c_y, rightCorner=False):  # возвращает массив массивов линий
+    numbs = list()  # массив цифр
+    num = str(num)  # число, которое хотим нарисовать
+    n = len(num)  # кол-во цифр в числе
     ind = 0
-    if rightCorner:
+    if rightCorner:  # если выравнивание по правому краю
         begin, end = c_x - 4 * n + 1, c_x
     else:
         begin, end = c_x - 2 * n + 1, c_x + 2 * n
-    for x in range(begin, end, 4):
-        numbs.append(giveNumber(num[ind], x, c_y - 2))
+    for x in range(begin, end, 4):  # перебираем все координаты, в которых должны находиться цифры
+        numbs.append(giveNumber(num[ind], x, c_y - 2))  # добавляем массив линий для каждой цифры
         ind += 1
     return numbs
 
 
-def giveNumber(num, x, y):
+def giveNumber(num, x, y):  # возвращает массив линий для цифры
     if num == "0":
         return giveZero(x, y)
     elif num == "1":
