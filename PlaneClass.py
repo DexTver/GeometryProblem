@@ -222,9 +222,9 @@ def findCrossPoints(angle, circle):  # поиск точек пересечен�
         if y >= 0:
             y, yo = y0 + sqrt(y), y0 - sqrt(y)
             if min(y2, y5) <= y <= max(y2, y5):
-                secondPoints.append((x1, y))
+                secondPoints.append((x2, y))
             if min(y2, y5) <= yo <= max(y2, y5):
-                secondPoints.append((x1, yo))
+                secondPoints.append((x2, yo))
     else:
         if check_pos(x1, y1, x2, y2, x0, y0) == angle.pos and check_pos(
                 x1, y1, x4, y4, x0, y0) != check_pos(x2, y2, x5, y5, x0, y0):
@@ -276,22 +276,25 @@ def findCrossPoints(angle, circle):  # поиск точек пересечен�
 
 def extractNumbers(string):  # "вытаскивает" числа из строки
     points = list()  # массив чисел
-    x = ""  # идущее сейчас "число"
+    x, minus = "", False  # идущее сейчас "число", знак числа
     for i in range(len(string)):  # перебираем все символы строки
         if string[i].isdigit():  # если символ - цифра, то добавляем его к идущему сейчас "числу"
             x += string[i]
-        elif x != "":  # иначе добавляем идущее сейчас число в points
-            points.append(int(x))
-            x = ""
+        else:
+            if x != "":  # иначе добавляем идущее сейчас число в points
+                points.append(-int(x) if minus else int(x))
+                x, minus = "", False
+            elif string[i] == "-":
+                minus = True
     if x != "":
-        points.append(int(x))
+        points.append(-int(x) if minus else int(x))
     return points  # возвращаем список всех точек
 
 
 def roundSegmentArea(x1, y1, x2, y2, x0, y0, r):  # ищет площадь фигуры, отсечённую хордой
     a = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     b = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-    c = sqrt((x2 - x0) ** 2 + (x2 - y0) ** 2)
+    c = sqrt((x2 - x0) ** 2 + (y2 - y0) ** 2)
     cosa = (b ** 2 + c ** 2 - a ** 2) / (2 * b * c)
     if cosa < -1:
         cosa = -1
