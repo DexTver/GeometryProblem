@@ -296,10 +296,7 @@ def roundSegmentArea(x1, y1, x2, y2, x0, y0, r):  # ищет площадь фи
     b = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
     c = sqrt((x2 - x0) ** 2 + (y2 - y0) ** 2)
     cosa = (b ** 2 + c ** 2 - a ** 2) / (2 * b * c)
-    if cosa < -1:
-        cosa = -1
-    elif cosa > 1:
-        cosa = 1
+    cosa = -1 if cosa < -1 else (1 if cosa > 1 else cosa)
     a = acos(cosa)
     area = ((r ** 2) / 2) * (a - sin(a))
     return area
